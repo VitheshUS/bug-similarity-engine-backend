@@ -3,7 +3,7 @@ from app.service.search_service import SearchService
 from app.infrastructure.data_repository import DataRepository
 from app.service.embedding_service import EmbeddingService
 from app.infrastructure.index import index
-from sentence_transformers import SentenceTransformer
+from app.infrastructure.faiss_model import model as embedding_model
 
 #Initialize FastAPI app
 app=FastAPI()
@@ -20,7 +20,7 @@ def get_index():
 
 #Sentence transformer model
 def get_embedding_model():
-    return SentenceTransformer('all-MiniLM-L6-v2')
+    return embedding_model
 
 #Embedding service
 def get_embedding_service(

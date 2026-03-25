@@ -1,4 +1,5 @@
 import faiss
+from numpy import rint
 from app.infrastructure.data_repository import DataRepository
 
 
@@ -34,6 +35,10 @@ def search_index(index,query_embedding,topK):
     #Important, Lower distance=More similar
     #Normalize the query embedding as well
     faiss.normalize_L2(query_embedding)
+
+    print("Query embedding shape:", query_embedding.shape)
+    print("Top K:", topK)
+    print("Index ntotal :", index.ntotal)
 
     #Get the similarity score and the indeces of each of these vectors
     similarity_scores,indices=index.search(query_embedding,topK)

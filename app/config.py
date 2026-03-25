@@ -1,0 +1,2 @@
+K=2
+THRESHOLD=0.6
