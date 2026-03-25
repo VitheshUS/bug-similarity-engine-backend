@@ -1,52 +1,57 @@
-from app.repository import data_repository as dr
-from app.service import embedding_service as es
 from app.utils import similarity as similarity_check
-from app.service import index_service as ids
+from app.infrastructure import index as ids
 import numpy as np
 
-K=3
-THRESHOLD=0.6
+class SearchService:
+    K=3
+    THRESHOLD=0.6
 
-def getMatches(query:str):
-    try:
-        embeddings=dr.get_embeddings()
+    def __init__(self,repository,index,embedding_service):
+        self.repository=repository
+        self.index=index
+        self.embedding_service=embedding_service
 
-        queryEmbedding=es.generate_embedding(query).reshape(1,-1)
+    def getMatches(self,query:str):
+        try:
+            embeddings=self.repository.get_embeddings()
 
-        similarities=similarity_check.compute_similarity(queryEmbedding,embeddings)
+            queryEmbedding=self.embedding_service.generate_embedding(query).reshape(1,-1)
 
-        similarities_filtered=similarities[similarities > THRESHOLD]
+            similarities=similarity_check.compute_similarity(queryEmbedding,embeddings)
 
-        similarities_sorted=similarities_filtered.argsort()
+            similarities_filtered=similarities[similarities > SearchService.THRESHOLD]
 
-        similarities_top_matches=similarities_sorted[-K:]
+            similarities_sorted=similarities_filtered.argsort()
 
-        similarities_top_matches_desc=similarities_top_matches[::-1]
+            similarities_top_matches=similarities_sorted[-SearchService.K:]
 
-        similar_matches=[]
+            similarities_top_matches_desc=similarities_top_matches[::-1]
 
-        queries=dr.get_queries()
-        for index in similarities_top_matches_desc:
-            similar_matches.append(
-                {
-                    "query":queries[index],
-                    "score":round(float(similarities[index]),2)
-                }
-            )
+            similar_matches=[]
 
-        test_FAISS(embeddings,queryEmbedding)
+            queries=self.repository.get_queries()
+            for index in similarities_top_matches_desc:
+                similar_matches.append(
+                    {
+                        "query":queries[index],
+                        "score":round(float(similarities[index]),2)
+                    }
+                )
 
-        return similar_matches
-    except Exception as e:
-        raise
+            SearchService.test_FAISS(embeddings,queryEmbedding)
 
-def test_FAISS(embeddings,query_embeddings):
-    print("performing faiss check")
-    
-    index=ids.build_index(embeddings)
+            return similar_matches
+        except Exception as e:
+            raise
 
-    print(index)
+    def test_FAISS(embeddings,query_embeddings):
+        print("performing faiss check")
+        
+        index=ids.get_index(embeddings)
 
-    similarity_score,indices=ids.search_index(index,query_embeddings,2)
+        print(index)
 
-    print(similarity_score,indices)
+        similarity_score,indices=ids.search_index(index,query_embeddings,2)
+
+        print(similarity_score,indices)
+

@@ -1,6 +1,8 @@
 import faiss
+from app.infrastructure.data_repository import DataRepository
 
-def build_index(embeddings):
+
+def get_index(embeddings):
     #Get the dimension of the numpy vector, here shape returns a tuple like (no. of vectors, length of vector(dimension))
     dimension=embeddings.shape[1]
 
@@ -15,6 +17,17 @@ def build_index(embeddings):
     index.add(embeddings)
 
     return index
+
+def create_index():
+    dr=DataRepository()
+    embeddings=dr.get_embeddings()
+
+    index=get_index(embeddings)
+
+    return index
+
+#Singleton instance of the index that can be used across the application
+index=create_index()
 
 
 def search_index(index,query_embedding,topK):
