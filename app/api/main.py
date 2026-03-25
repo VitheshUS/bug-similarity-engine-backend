@@ -1,9 +1,13 @@
-from fastapi import FastAPI,Depends
+from fastapi import FastAPI,Depends, Request
+from fastapi.responses import JSONResponse
 from app.service.search_service import SearchService
 from app.infrastructure.data_repository import DataRepository
 from app.service.embedding_service import EmbeddingService
 from app.infrastructure.index import index
 from app.infrastructure.faiss_model import model as embedding_model
+from app.domain.model.api.response import ApiResponse
+from app.config import SUCCESS_STATUS,ERROR_STATUS
+from app.core.validator import ApiValidator
 
 #Initialize FastAPI app
 app=FastAPI()
@@ -37,6 +41,18 @@ def get_search_service(
     ):
     return SearchService(repository,index,embedding_service)
 
+#Exception handler
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+
+    print(f"Error: {exc}")
+    return JSONResponse(
+        status_code=500,
+        content={
+            "status": ERROR_STATUS,
+            "message": "Internal server error"
+        }
+    )
 
 #Controller-Endpoint
 @app.get('/search-match')
@@ -44,9 +60,15 @@ def getSimilarMatch(
     query:str,
     search_service:SearchService=Depends(get_search_service)
     ):
-    try:
+        #Validate the query parameter
+        ApiValidator.validate_query(query)
+
         matches = search_service.getMatches(query)
-        return {"status": "SUCCESS", "result": matches}
-    except Exception as e:
-        print("ERROR:", str(e))
-        return {"status": "ERROR", "message": str(e)}
+
+        return JSONResponse(
+            status_code=200,
+            content={
+                "status": SUCCESS_STATUS,
+                "result": matches
+            }
+        )

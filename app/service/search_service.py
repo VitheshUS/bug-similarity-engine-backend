@@ -1,6 +1,7 @@
 from app.utils import similarity as similarity_check
 from app.infrastructure import index as ids
 from app.config import K,THRESHOLD
+from app.domain.model.searchService.queryScore import QueryScore
 
 class SearchService:
     def __init__(self,repository,index,embedding_service):
@@ -19,12 +20,15 @@ class SearchService:
             queries=self.repository.get_queries()
 
             for index in range(len(indices)):
+                if similarity_score[index]>THRESHOLD:
+                    continue
+
                 similar_matches.append(
-                    {
-                        "query":queries[indices[index]],
-                        "score":round(float(similarity_score[index]),2)
-                    }
-                )
+                            QueryScore(
+                                queries[indices[index]],
+                                round(float(similarity_score[index]),2)
+                            ).to_dict()
+                        )
 
             return similar_matches
         except Exception as e:
