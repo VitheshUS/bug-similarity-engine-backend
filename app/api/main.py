@@ -10,12 +10,20 @@ from app.domain.validator import ApiValidator
 from app.infrastructure.embeddingModel import EmbeddingModel
 from app.infrastructure.index import FaissIndex
 from contextlib import asynccontextmanager
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,  # show INFO and above
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
+
+logger = logging.getLogger(__name__)
 
 #startup event
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     #Any startup code can be placed here
-    print("Application is starting up...")
+    logger.info("Application is starting up...")
 
     repository=get_repository()
     embeddings=repository.get_embeddings()
@@ -25,7 +33,7 @@ async def lifespan(app: FastAPI):
     yield
 
     #Any shutdown code can be placed here
-    print("Application is shutting down...")
+    logger.info("Application is shutting down...")
 
 
 #Initialize FastAPI app
@@ -55,19 +63,23 @@ def get_embedding_service(
 def get_index(request: Request):
     return request.app.state.index
 
+def get_logger():
+    return logger
+
 #search service
 def get_search_service(
         repository:DataRepository=Depends(get_repository),
         index=Depends(get_index),
-        embedding_service:EmbeddingService=Depends(get_embedding_service)
+        embedding_service:EmbeddingService=Depends(get_embedding_service),
+        logger:logging.Logger=Depends(get_logger)
     ):
-    return SearchService(repository,index,embedding_service)
+    return SearchService(repository,index,embedding_service,logger)
 
 #Exception handler
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
 
-    print(f"Error: {exc}")
+    logger.error(f"Error: {exc}")
     return JSONResponse(
         status_code=500,
         content={
