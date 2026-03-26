@@ -11,6 +11,6 @@ class EmbeddingService:
         return embedding
 
     def save_embedding(self,text):
-        embedding=self.model.generate_embedding(text)
+        embedding=self.generate_embedding(text)
         self.data_store.put_embeddings(embedding)
 

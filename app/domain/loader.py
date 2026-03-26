@@ -1,6 +1,6 @@
 import numpy as np
 import json
-from app.service import embedding_service as es
+from app.infrastructure import embedding_service as es
 
 dataPath='data/bugs.json'
 with open(dataPath) as f:

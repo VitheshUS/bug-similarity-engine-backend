@@ -1,13 +1,18 @@
 from fastapi import FastAPI,Depends, Request
 from fastapi.responses import JSONResponse
-from app.service.search_service import SearchService
+from sentence_transformers import SentenceTransformer
+from app.application.search_service import SearchService
 from app.infrastructure.data_repository import DataRepository
-from app.service.embedding_service import EmbeddingService
+from app.infrastructure.embedding_service import EmbeddingService
 from app.infrastructure.index import index
-from app.infrastructure.faiss_model import model as embedding_model
 from app.domain.model.api.response import ApiResponse
 from app.config import SUCCESS_STATUS,ERROR_STATUS
-from app.core.validator import ApiValidator
+from app.domain.validator import ApiValidator
+from app.infrastructure.embeddingModel import EmbeddingModel
+
+#Singleton instances
+embedding_model=SentenceTransformer('all-MiniLM-L6-v2')
+
 
 #Initialize FastAPI app
 app=FastAPI()
@@ -24,7 +29,7 @@ def get_index():
 
 #Sentence transformer model
 def get_embedding_model():
-    return embedding_model
+    return EmbeddingModel(embedding_model)
 
 #Embedding service
 def get_embedding_service(
