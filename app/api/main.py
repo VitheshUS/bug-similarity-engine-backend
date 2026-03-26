@@ -4,18 +4,32 @@ from sentence_transformers import SentenceTransformer
 from app.application.search_service import SearchService
 from app.infrastructure.data_repository import DataRepository
 from app.infrastructure.embedding_service import EmbeddingService
-from app.infrastructure.index import index
 from app.domain.model.api.response import ApiResponse
 from app.config import SUCCESS_STATUS,ERROR_STATUS
 from app.domain.validator import ApiValidator
 from app.infrastructure.embeddingModel import EmbeddingModel
+from app.infrastructure.index import FaissIndex
+from contextlib import asynccontextmanager
 
-#Singleton instances
-embedding_model=SentenceTransformer('all-MiniLM-L6-v2')
+#startup event
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    #Any startup code can be placed here
+    print("Application is starting up...")
+
+    repository=get_repository()
+    embeddings=repository.get_embeddings()
+    app.state.embedding_model=SentenceTransformer('all-MiniLM-L6-v2')
+    app.state.index=get_faiss_index(embeddings)
+
+    yield
+
+    #Any shutdown code can be placed here
+    print("Application is shutting down...")
 
 
 #Initialize FastAPI app
-app=FastAPI()
+app = FastAPI(lifespan=lifespan)
 
 #Dependency Injection
 
@@ -23,13 +37,13 @@ app=FastAPI()
 def get_repository():
     return DataRepository() 
 
-#FAISS index
-def get_index():
-    return index
-
 #Sentence transformer model
-def get_embedding_model():
-    return EmbeddingModel(embedding_model)
+def get_embedding_model(request: Request):
+    return EmbeddingModel(request.app.state.embedding_model)
+
+#Get Faiss index
+def get_faiss_index(embeddings):
+    return FaissIndex(embeddings)   
 
 #Embedding service
 def get_embedding_service(
@@ -37,6 +51,9 @@ def get_embedding_service(
     data_store=Depends(get_repository)
 ):
     return EmbeddingService(model,data_store)
+
+def get_index(request: Request):
+    return request.app.state.index
 
 #search service
 def get_search_service(

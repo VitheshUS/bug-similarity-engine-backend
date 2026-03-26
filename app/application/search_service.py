@@ -1,5 +1,3 @@
-from app.utils import similarity as similarity_check
-from app.infrastructure import index as ids
 from app.config import K,THRESHOLD
 from app.domain.model.searchService.queryScore import QueryScore
 
@@ -13,7 +11,7 @@ class SearchService:
         try:
             queryEmbedding=self.embedding_service.generate_embedding(query).reshape(1,-1)
 
-            similarity_score,indices=ids.search_index(self.index,queryEmbedding,K)
+            similarity_score,indices=self.index.search_index(queryEmbedding,K)
 
             similar_matches=[]
 
