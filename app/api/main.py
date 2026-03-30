@@ -106,3 +106,23 @@ def getSimilarMatch(
                 "result": matches
             }
         )
+
+@app.get('/health')
+def health_check():
+    return JSONResponse(
+        status_code=200,
+        content={
+            "status": SUCCESS_STATUS,
+            "message": "API is healthy"
+        }
+    )
+
+@app.get('/ready')
+def readiness_check():
+    return JSONResponse(
+        status_code=200,
+        content={
+            "status": SUCCESS_STATUS,
+            "message": "API is ready"
+        }
+    )

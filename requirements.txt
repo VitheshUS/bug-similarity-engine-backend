@@ -1,6 +1,8 @@
 fastapi
 uvicorn
-sentence-transformers
-numpy
 scikit-learn
-faiss
+faiss-cpu==1.7.4
+
+numpy<2
+sentence-transformers==2.6.1
+transformers==4.36.2
