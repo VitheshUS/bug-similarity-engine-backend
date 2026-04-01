@@ -25,3 +25,7 @@ class DataRepository:
         bugs.append(query)
         with open('data/bugs.json','w') as f:
             json.dump(bugs,f)
+
+    def clear_embeddings(self):
+        # Clear the embeddings by saving an empty array
+        np.save(embeddingPath, np.array([]))

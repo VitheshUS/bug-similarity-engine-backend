@@ -15,6 +15,7 @@ import logging
 import time
 from fastapi.middleware.cors import CORSMiddleware
 from app.domain.model.api.addQuery import AddQuery
+from app.domain.loader import Loader
 
 logging.basicConfig(
     level=logging.INFO,  # show INFO and above
@@ -29,10 +30,16 @@ async def lifespan(app: FastAPI):
     #Any startup code can be placed here
     logger.info("Application is starting up...")
 
-    repository=get_repository()
-    embeddings=repository.get_embeddings()
-    app.state.embedding_model=SentenceTransformer('all-MiniLM-L6-v2')
-    app.state.index=get_faiss_index(embeddings)
+    app.state.embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
+
+    repository = get_repository()
+    embedding_service = EmbeddingService(EmbeddingModel(app.state.embedding_model), repository)
+    loader = Loader(embedding_service)
+    loader.clear_data()  # Clear existing data and embeddings before loading new data
+    loader.load_data()
+
+    embeddings = repository.get_embeddings()
+    app.state.index = get_faiss_index(embeddings)
 
     yield
 
@@ -77,6 +84,9 @@ def get_index(request: Request):
 
 def get_logger():
     return logger
+
+def get_loader(embedding_service:EmbeddingService=Depends(get_embedding_service)):
+    return Loader(embedding_service)
 
 #search service
 def get_search_service(
