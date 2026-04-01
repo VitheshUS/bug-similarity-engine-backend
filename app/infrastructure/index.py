@@ -32,3 +32,7 @@ class FaissIndex:
         similarity_scores,indices=self.index.search(query_embedding,topK)
 
         return similarity_scores[0],indices[0]
+    
+    def add_embeddings(self,embeddings):
+        faiss.normalize_L2(embeddings)
+        self.index.add(embeddings)

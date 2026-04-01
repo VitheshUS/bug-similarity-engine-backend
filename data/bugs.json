@@ -1,6 +1,1 @@
-[
-  "App crashes when clicking login",
-  "Login button causes application crash",
-  "Database connection timeout error",
-  "UI not loading properly"
-]
+["App crashes when clicking login", "Login button causes application crash", "Database connection timeout error", "UI not loading properly", "internal server error"]
