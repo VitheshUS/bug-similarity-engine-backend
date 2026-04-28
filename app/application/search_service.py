@@ -37,6 +37,8 @@ class SearchService:
                                 round(float(similarity_score[index]),2)
                             ).to_dict()
                         )
+                
+            similar_matches.sort(key=lambda x:x['score'],reverse=True)
 
             # Logging the time taken for the entire search operation, as well as the time taken for each individual step 
             self.logger.info(

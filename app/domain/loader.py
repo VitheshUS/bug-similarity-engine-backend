@@ -1,13 +1,21 @@
 import numpy as np
 import json
-from app.infrastructure import embedding_service as es
 
-dataPath='data/bugs.json'
-with open(dataPath) as f:
-    texts=json.load(f)
+class Loader:
+    def __init__(self,embedding_service):
+        self.embedding_service=embedding_service
 
-embedding=es.generate_embedding(texts)
+    def load_data(self):
+        print("Loading data...",self.embedding_service)
+        dataPath='data/bugs.json'
+        with open(dataPath) as f:
+            texts=json.load(f)
 
-embeddingPath='data/embedding'
+        embedding = self.embedding_service.generate_embedding(texts)
 
-np.save(embeddingPath,embedding)
+        embeddingPath = 'data/embedding.npy'
+        np.save(embeddingPath, embedding)
+
+    def clear_data(self):
+        # Clear the data from the repository
+        self.embedding_service.data_store.clear_embeddings()

@@ -2,6 +2,7 @@ from fastapi import FastAPI,Depends, Request
 from fastapi.responses import JSONResponse
 from sentence_transformers import SentenceTransformer
 from app.application.search_service import SearchService
+from app.application.insert_service import InsertService
 from app.infrastructure.data_repository import DataRepository
 from app.infrastructure.embedding_service import EmbeddingService
 from app.domain.model.api.response import ApiResponse
@@ -13,6 +14,8 @@ from contextlib import asynccontextmanager
 import logging
 import time
 from fastapi.middleware.cors import CORSMiddleware
+from app.domain.model.api.addQuery import AddQuery
+from app.domain.loader import Loader
 
 logging.basicConfig(
     level=logging.INFO,  # show INFO and above
@@ -27,10 +30,16 @@ async def lifespan(app: FastAPI):
     #Any startup code can be placed here
     logger.info("Application is starting up...")
 
-    repository=get_repository()
-    embeddings=repository.get_embeddings()
-    app.state.embedding_model=SentenceTransformer('all-MiniLM-L6-v2')
-    app.state.index=get_faiss_index(embeddings)
+    app.state.embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
+
+    repository = get_repository()
+    embedding_service = EmbeddingService(EmbeddingModel(app.state.embedding_model), repository)
+    loader = Loader(embedding_service)
+    loader.clear_data()  # Clear existing data and embeddings before loading new data
+    loader.load_data()
+
+    embeddings = repository.get_embeddings()
+    app.state.index = get_faiss_index(embeddings)
 
     yield
 
@@ -76,6 +85,9 @@ def get_index(request: Request):
 def get_logger():
     return logger
 
+def get_loader(embedding_service:EmbeddingService=Depends(get_embedding_service)):
+    return Loader(embedding_service)
+
 #search service
 def get_search_service(
         repository:DataRepository=Depends(get_repository),
@@ -84,6 +96,15 @@ def get_search_service(
         logger:logging.Logger=Depends(get_logger)
     ):
     return SearchService(repository,index,embedding_service,logger)
+
+#insert service
+def get_insert_service(
+        repository:DataRepository=Depends(get_repository),
+        index=Depends(get_index),
+        embedding_service:EmbeddingService=Depends(get_embedding_service),
+        logger:logging.Logger=Depends(get_logger)
+    ):
+    return InsertService(repository,index,embedding_service,logger)
 
 #Exception handler
 @app.exception_handler(Exception)
@@ -127,6 +148,24 @@ def getSimilarMatch(
                 "result": matches
             }
         )
+
+@app.post('/add-query')
+def add_query(
+    request:AddQuery,
+    insert_service:InsertService=Depends(get_insert_service)
+):
+    #Validate the query parameter
+    ApiValidator.validate_query(request.query)
+
+    insert_service.addQuery(request.query)
+
+    return JSONResponse(
+        status_code=200,
+        content={
+            "status": SUCCESS_STATUS,
+            "message": "Query added successfully"
+        }
+    )
 
 @app.get('/health')
 def health_check():

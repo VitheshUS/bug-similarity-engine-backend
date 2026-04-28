@@ -14,3 +14,6 @@ class EmbeddingService:
         embedding=self.generate_embedding(text)
         self.data_store.put_embeddings(embedding)
 
+    def clear_embeddings(self):
+        self.data_store.clear_embeddings()
+
