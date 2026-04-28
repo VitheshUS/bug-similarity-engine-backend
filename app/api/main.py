@@ -11,6 +11,8 @@ from app.infrastructure.embeddingModel import EmbeddingModel
 from app.infrastructure.index import FaissIndex
 from contextlib import asynccontextmanager
 import logging
+import time
+from fastapi.middleware.cors import CORSMiddleware
 
 logging.basicConfig(
     level=logging.INFO,  # show INFO and above
@@ -38,6 +40,14 @@ async def lifespan(app: FastAPI):
 
 #Initialize FastAPI app
 app = FastAPI(lifespan=lifespan)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"]
+)
 
 #Dependency Injection
 
@@ -97,7 +107,18 @@ def getSimilarMatch(
         #Validate the query parameter
         ApiValidator.validate_query(query)
 
+        start_time=time.time() #logging the start time of the request handling
+
         matches = search_service.getMatches(query)
+
+        end_time=time.time() #logging the end time of the request handling
+
+        logger.info({
+            "event": "Search operation",
+            "query": query,
+            "matches_found": len(matches),
+            "latency": f"{round(end_time-start_time,2)} seconds"
+        })
 
         return JSONResponse(
             status_code=200,
