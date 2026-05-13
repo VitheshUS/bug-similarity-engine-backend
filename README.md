@@ -1,6 +1,6 @@
-# Semantic Bug Search System — Backend
+# Semantic Bug Search System
 
-A semantic bug retrieval system built using FastAPI, Sentence Transformers, and FAISS for context-aware issue matching.
+A semantic bug retrieval platform built using FastAPI, Angular, Sentence Transformers, and FAISS for context-aware issue matching.
 
 Instead of relying on traditional keyword-based search, the system uses transformer-generated embeddings and vector similarity search to retrieve semantically related bugs and duplicate issues.
 
@@ -8,84 +8,116 @@ Instead of relying on traditional keyword-based search, the system uses transfor
 
 ## Features
 
-- Semantic bug search using vector embeddings
-- FAISS-powered nearest neighbor retrieval
-- FastAPI-based REST API architecture
-- Incremental FAISS index updates without full re-indexing
-- JSON-based ingestion pipeline
-- Cosine similarity–based contextual matching
-- Dockerized backend setup
+* Semantic bug search using vector embeddings
+* FAISS-powered nearest neighbor retrieval
+* Context-aware issue matching using cosine similarity
+* Incremental FAISS index updates without full re-indexing
+* FastAPI-based REST API backend
+* Angular frontend for natural language search
+* Dockerized local orchestration
+* NGINX reverse proxy configuration
+* Real-time semantic retrieval results
 
 ---
 
 ## Tech Stack
 
-- Python
-- FastAPI
-- Sentence Transformers
-- FAISS
-- NumPy
-- Docker
-- NGINX
+### Backend
+
+* Python
+* FastAPI
+* Sentence Transformers
+* FAISS
+* NumPy
+
+### Frontend
+
+* Angular
+* TypeScript
+* HTML
+* CSS
+
+### Infrastructure
+
+* Docker
+* NGINX
 
 ---
 
 ## Architecture Overview
 
-Bug Data (JSON)
-       ↓
-Embedding Generation (Sentence Transformers)
-       ↓
-Vector Storage (FAISS Index)
-       ↓
-FastAPI Search API
-       ↓
-Semantic Retrieval Results
+```text
+User Query
+    ↓
+Angular Frontend
+    ↓
+FastAPI Backend
+    ↓
+Embedding Generation
+(Sentence Transformers)
+    ↓
+FAISS Vector Search
+    ↓
+Ranked Semantic Results
+```
 
 ---
-## How Semantic Search Works
-Bug descriptions are converted into dense vector embeddings using Sentence Transformers.
-Embeddings are stored inside a FAISS vector index.
-User queries are converted into embeddings in real time.
-Cosine similarity search retrieves semantically related bugs.
-Results are ranked based on similarity score.
 
-Unlike keyword search, this approach can identify contextually similar issues even when exact words do not match.
+## How Semantic Search Works
+
+1. Bug descriptions are converted into dense vector embeddings using Sentence Transformers.
+2. Embeddings are stored inside a FAISS vector index.
+3. User queries are converted into embeddings in real time.
+4. Cosine similarity search retrieves semantically related bugs.
+5. Results are ranked based on similarity score.
+
+Unlike keyword-based search, this approach can identify contextually similar issues even when exact words do not match.
 
 ---
 
 ## Project Structure
-backend/
+
+```text
+semantic-bug-search/
 │
-├── app/
-│   ├── api/
-│   ├── services/
-│   ├── models/
-│   ├── embeddings/
-│   └── utils/
+├── backend/
+│   ├── app/
+│   ├── data/
+│   ├── faiss_index/
+│   ├── requirements.txt
+│   └── Dockerfile
 │
-├── data/
-├── faiss_index/
-├── requirements.txt
-├── Dockerfile
-└── main.py
+├── frontend/
+│   ├── src/
+│   ├── nginx/
+│   ├── package.json
+│   └── Dockerfile
+│
+├── docker-compose.yml
+└── README.md
+```
 
 ---
 
-## API Endpoints
-Search Bugs
+## API Endpoint
+
+### Search Bugs
+
+```http
 POST /search
+```
 
----
+Request:
 
-## Request:
+```json
 {
   "query": "login page crashes after token expiration"
 }
+```
 
----
-## Response:
+Response:
 
+```json
 {
   "results": [
     {
@@ -95,41 +127,131 @@ POST /search
     }
   ]
 }
+```
 
 ---
+
 ## Local Setup
-Clone Repository
+
+### Clone Repository
+
+```bash
 git clone <repo-url>
-cd backend
-Create Virtual Environment
+cd semantic-bug-search
+```
+
+---
+
+## Backend Setup
+
+### Create Virtual Environment
+
+```bash
 python -m venv venv
-Activate Environment
-Windows
+```
+
+### Activate Environment
+
+#### Windows
+
+```bash
 venv\Scripts\activate
-Linux / Mac
+```
+
+#### Linux / Mac
+
+```bash
 source venv/bin/activate
-Install Dependencies
+```
+
+### Install Dependencies
+
+```bash
 pip install -r requirements.txt
-Run Application
+```
+
+### Run Backend
+
+```bash
 uvicorn main:app --reload
+```
 
----
-## Application runs on:
+Backend runs on:
 
+```text
 http://localhost:8000
-Docker Setup
-Build Docker Image
-docker build -t semantic-search-backend .
-Run Container
-docker run -p 8000:8000 semantic-search-backend
-Future Improvements
-Hybrid semantic + keyword search
-Redis caching for faster retrieval
-Authentication and role-based access
-Streaming search suggestions
-Cloud deployment
-Support for larger embedding models
+```
+
 ---
 
-Author
+## Frontend Setup
+
+### Install Dependencies
+
+```bash
+npm install
+```
+
+### Run Angular Application
+
+```bash
+ng serve
+```
+
+Frontend runs on:
+
+```text
+http://localhost:4200
+```
+
+---
+
+## Docker Setup
+
+### Build Containers
+
+```bash
+docker-compose build
+```
+
+### Run Application
+
+```bash
+docker-compose up
+```
+
+---
+
+## NGINX Configuration
+
+NGINX is used for:
+
+* Serving Angular static files
+* Reverse proxying API requests
+* Simplifying local container orchestration
+
+Example:
+
+```nginx
+location /api/ {
+    proxy_pass http://backend:8000/;
+}
+```
+
+---
+
+## Future Improvements
+
+* Hybrid semantic + keyword search
+* Redis caching for faster retrieval
+* Authentication and role-based access
+* Streaming search suggestions
+* Cloud deployment
+* Search filtering and categorization
+* AI-generated bug summaries
+
+---
+
+## Author
+
 Vithesh U S
