@@ -32,7 +32,6 @@ Instead of relying on traditional keyword-based search, the system uses transfor
 
 ## Architecture Overview
 
-```text
 Bug Data (JSON)
        ↓
 Embedding Generation (Sentence Transformers)
@@ -42,7 +41,9 @@ Vector Storage (FAISS Index)
 FastAPI Search API
        ↓
 Semantic Retrieval Results
-How Semantic Search Works
+
+---
+## How Semantic Search Works
 Bug descriptions are converted into dense vector embeddings using Sentence Transformers.
 Embeddings are stored inside a FAISS vector index.
 User queries are converted into embeddings in real time.
@@ -51,7 +52,9 @@ Results are ranked based on similarity score.
 
 Unlike keyword search, this approach can identify contextually similar issues even when exact words do not match.
 
-Project Structure
+---
+
+## Project Structure
 backend/
 │
 ├── app/
@@ -66,17 +69,22 @@ backend/
 ├── requirements.txt
 ├── Dockerfile
 └── main.py
-API Endpoints
+
+---
+
+## API Endpoints
 Search Bugs
 POST /search
 
-Request:
+---
 
+## Request:
 {
   "query": "login page crashes after token expiration"
 }
 
-Response:
+---
+## Response:
 
 {
   "results": [
@@ -87,7 +95,9 @@ Response:
     }
   ]
 }
-Local Setup
+
+---
+## Local Setup
 Clone Repository
 git clone <repo-url>
 cd backend
@@ -103,7 +113,8 @@ pip install -r requirements.txt
 Run Application
 uvicorn main:app --reload
 
-Application runs on:
+---
+## Application runs on:
 
 http://localhost:8000
 Docker Setup
@@ -118,6 +129,7 @@ Authentication and role-based access
 Streaming search suggestions
 Cloud deployment
 Support for larger embedding models
-Author
+---
 
+Author
 Vithesh U S
